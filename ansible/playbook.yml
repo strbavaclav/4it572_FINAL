@@ -2,6 +2,8 @@
 - name: Deploy and Configure EC2 Instance
   hosts: localhost
   connection: local
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
 
   tasks:
     - name: Launch EC2 Instance
