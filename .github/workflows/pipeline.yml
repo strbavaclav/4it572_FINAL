@@ -98,7 +98,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Code checkout
+      - name: Checkout code
         uses: actions/checkout@v4.1.1
+
+      # Install Ansible
+      - name: Install Python
+        uses: actions/setup-python@v2
         with:
-          token: ${{secrets.WORKFLOW_TOKEN}}
+          python-version: '3.x'
+
+      - name: Install Ansible
+        run: pip install ansible
+
+      # Run Ansible playbook for deployment
+      - name: Deploy with Ansible
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+        run: |
+          ansible-playbook -i "localhost," -c local playbook.yml
