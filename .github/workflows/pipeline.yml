@@ -98,15 +98,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy
-        uses: appleboy/ssh-action@v1.0.0
+      - name: Checkout code
+        uses: actions/checkout@v4.1.1
+      - name: Install Python
+        uses: actions/setup-python@v2
         with:
-            host: ec2-54-85-180-185.compute-1.amazonaws.com
-            username: ec2-user
-            key: ${{secrets.AWS_KEY_PEM}}
-            port: 22
-            script: |
-              cd 4it572_FINAL
-              cd ansible
+          python-version: '3.x'
 
-              ansible-playbook playbook.yml --vault-password-file vault_pass.txt --user ec2-user --key-file ansible.pem
+      - name: Install Ansible
+        run: sudo pip3 install ansible
+
+
+      - name: Install Boto3 & Boto
+        run: sudo pip3 install boto3 boto
+      - name: Deploy with Ansible
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+        run: |
+          ansible-playbook playbook.yml --user ec2-user --key-file ansible.pem \
+          -e "access_key=${AWS_ACCESS_KEY_ID}" \
+          -e "secret_key=${AWS_SECRET_ACCESS_KEY}" \
+          -e "session_token=${AWS_SESSION_TOKEN}" ansible/playbook.yml
