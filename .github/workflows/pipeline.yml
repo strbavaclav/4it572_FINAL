@@ -121,8 +121,9 @@ jobs:
               mkdir -p group_vars/all
 
               echo "access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}" > group_vars/all/aws.yml
-              echo "secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}" > group_vars/all/aws.yml
-              echo "session_token: ${{ secrets.AWS_SESSION_TOKEN }}" > group_vars/all/aws.yml
+              echo "secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> group_vars/all/aws.yml
+              echo "session_token: ${{ secrets.AWS_SESSION_TOKEN }}" >> group_vars/all/aws.yml
+              
               ansible-vault encrypt group_vars/all/aws.yml --vault-password-file vault_pass.txt
 
               ansible-playbook playbook.yml --vault-password-file vault_pass.txt --user ec2-user --key-file ansible.pem -e "access_key=${{secrets.AWS_ACCESS_KEY_ID}}" -e "secret_key=${{secrets.AWS_SECRET_ACCESS_KEY}}" -e "session_token=${{secrets.AWS_SESSION_TOKEN}}"
