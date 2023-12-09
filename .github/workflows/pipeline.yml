@@ -115,4 +115,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
         run: |
-          ansible-playbook -i "localhost," -c local ansible/playbook.yml
+          ansible-playbook -i "localhost," -c local \
+          -e "access_key=${AWS_ACCESS_KEY_ID}" \
+          -e "secret_key=${AWS_SECRET_ACCESS_KEY}" \
+          -e "session_token=${AWS_SESSION_TOKEN}" ansible/playbook.yml
