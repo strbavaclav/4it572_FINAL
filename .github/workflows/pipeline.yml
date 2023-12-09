@@ -107,7 +107,7 @@ jobs:
           python-version: '3.x'
 
       - name: Install Ansible
-        run: pip install ansible
+        run: pip install ansible boto3 botocore
 
       - name: Deploy with Ansible
         env:
