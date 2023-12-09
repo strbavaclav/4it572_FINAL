@@ -6,7 +6,6 @@
   tasks:
     - name: Launch EC2 Instance
       ec2_instance:
-        # EC2 instance configuration details
         instance_type: t2.micro
         image_id: ami-0230bd60aa48260c6
         region: us-east-1
@@ -47,5 +46,3 @@
           - docker
         state: latest
         update_cache: yes
-
-    # Rest of your tasks...
