@@ -101,20 +101,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4.1.1
 
-      - name: Install Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
-
-      - name: Install Ansible
-        run: pip3 install ansible
-
-
-      - name: Install Boto3 & Botocore
-        run: pip3 install boto3 botocore
-      
-      - name: Run playbook
+      - name: Deploy with Ansible
         uses: dawidd6/action-ansible-playbook@v2
-        with:
-          # Required, playbook filepath
+        with: 
           playbook: ansible/playbook.yml
+          options: |
+            --extra-vars access_key=${AWS_ACCESS_KEY_ID} secret_key=${AWS_SECRET_ACCESS_KEY} session_token=${AWS_SESSION_TOKEN}
