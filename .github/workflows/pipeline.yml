@@ -112,8 +112,14 @@ jobs:
               pip3 install ansible boto boto3
               git clone https://github.com/strbavaclav/4it572_FINAL.git
               ls -la
-              cd 4IT572_FINAL
+              cd 4it572_FINAL
               cd ansible
-              echo ${{secrets.AWS_KEY_PEM}} > ansible.pem
-              ansible-playbook playbook.yml --ask-vault 
-              ls -la
+              echo "${{secrets.AWS_KEY_PEM}}" > ansible.pem
+              echo "${{ secrets.VAULT_PASSWORD }}" > vault_pass.txt
+
+              echo "access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}" > group_vars/all/aws.yml
+              echo "secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> group_vars/all/aws.yml
+              echo "session_token: ${{ secrets.AWS_SESSION_TOKEN }}" >> group_vars/all/aws.yml
+              ansible-vault encrypt group_vars/all/aws.yml --vault-password-file vault_pass.txt
+
+              ansible-playbook playbook.yml --vault-password-file vault_pass.txt --user ec2-user --key-file ansible.pem
