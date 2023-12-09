@@ -99,11 +99,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.1.1
-
-      - name: Deploy with Ansible
-        uses: dawidd6/action-ansible-playbook@v2
-        with: 
-          playbook: ansible/playbook.yml
-          options: |
-            --extra-vars access_key=${AWS_ACCESS_KEY_ID} secret_key=${AWS_SECRET_ACCESS_KEY} session_token=${AWS_SESSION_TOKEN}
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+            host: ec2-54-85-180-185.compute-1.amazonaws.com
+            username: ec2-user
+            key: ${{secrets.AWS_KEY_PEM}}
+            port: 22
+            script: |
+              whoami
+              ls -la
