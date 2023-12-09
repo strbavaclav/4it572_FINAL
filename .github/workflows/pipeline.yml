@@ -113,8 +113,12 @@ jobs:
               git clone https://github.com/strbavaclav/4it572_FINAL.git
               cd 4it572_FINAL
               cd ansible
+              rm -rf ansible.pem vault_pass.txt group_vars/all/aws.yml
+
               echo "${{secrets.AWS_KEY_PEM}}" > ansible.pem
               echo "${{ secrets.VAULT_PASSWORD }}" > vault_pass.txt
+
+              mkdir -p group_vars/all
 
               echo "access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}" > group_vars/all/aws.yml
               echo "secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}" > group_vars/all/aws.yml
