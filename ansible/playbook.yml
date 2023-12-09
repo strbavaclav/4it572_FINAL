@@ -1,5 +1,4 @@
----
-- name: Deploy and Configure EC2 Instance
+- name: Deploy to EC2
   hosts: localhost
   connection: local
 
@@ -10,7 +9,7 @@
         image_id: ami-0230bd60aa48260c6
         region: us-east-1
         key_name: ansible
-        vpc_subnet_id: subnet-07336005791ff788a
+        vpc_subnet_id: subnet-023f54cb0099708a1
         count: 1
         network:
           assign_public_ip: yes
@@ -23,20 +22,20 @@
 
     - name: Add instance host to security_group
       add_host:
-        hostname: "{{ item.public_ip }}"
+        hostname: "{{item.public_ip_address}}"
         groupname: launched
-      loop: "{{ ec2_instance_result.instances }}"
+      loop: "{{ec2_instance_result.instances}}"
 
-    - name: Wait for SSH connection
-      delegate_to: "{{ item.public_ip }}"
+    - name: Wait for ssh connection
+      delegate_to: "{{ item.public_ip_address }}"
       wait_for_connection:
         delay: 30
         timeout: 300
-      loop: "{{ ec2_instance_result.instances }}"
-
-- name: Configure EC2 Instance
+      loop: "{{ec2_instance_result.instances}}"
+    
+- name: Configure EC2
   hosts: launched
-  become: true
+  connection: ssh
 
   tasks:
     - name: Install Git and Docker
@@ -45,22 +44,22 @@
           - git
           - docker
         state: latest
-        update_cache: true
-      become: true
+        update_cache: yes
+      become: yes
 
     - service:
         name: docker
         state: started
         enabled: yes
-      become: true
+      become: yes
 
     - name: Start Docker on startup
       shell: systemctl enable docker
-      become: true
+      become: yes
     
     - name: Set rights to Docker
       shell: usermod -a -G docker ec2-user
-      become: true
+      become: yes
 
     - name: Get eshop from Git
       git:
@@ -69,13 +68,13 @@
     
     - name: Build Docker with eshop
       shell: cd app && docker build -t myeshop:latest .
-      become: true
+      become: yes
 
     - name: Run Docker with eshop
       shell: docker run -p 80:3000 myeshop
       async: 45
       poll: 0
-      become: true
+      become: yes
 
     - wait_for:
         port:
