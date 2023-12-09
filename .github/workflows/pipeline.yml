@@ -101,7 +101,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4.1.1
 
-      # Install Ansible
       - name: Install Python
         uses: actions/setup-python@v2
         with:
@@ -110,7 +109,6 @@ jobs:
       - name: Install Ansible
         run: pip install ansible
 
-      # Run Ansible playbook for deployment
       - name: Deploy with Ansible
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
