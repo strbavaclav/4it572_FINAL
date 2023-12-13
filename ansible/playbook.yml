@@ -1,3 +1,30 @@
+- name: Terminate Previous Instances
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  tasks:
+    - name: Check for previous instance IDs file
+      stat:
+        path: ./previous_instance_ids.txt
+      register: prev_instance_file
+
+    - name: Read previous instance IDs
+      command: cat ./previous_instance_ids.txt
+      register: prev_instance_ids
+      when: prev_instance_file.stat.exists
+
+    - name: Terminate previous instances
+      ec2_instance:
+        state: 'absent'
+        instance_ids: "{{ (prev_instance_ids.stdout | from_json) }}"
+        aws_access_key: "{{ access_key }}"
+        aws_secret_key: "{{ secret_key }}"
+        security_token: "{{ session_token }}"
+        region: us-east-1
+      when: prev_instance_ids is defined and prev_instance_ids.stdout != ''
+
+
 - name: Deploy to EC2
   hosts: localhost
   connection: local
@@ -81,4 +108,17 @@
     - wait_for:
         port:
           80
+
+- name: Save instance IDs for next run
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  tasks:
+    - name: Save instance IDs for next run
+      local_action: copy content="{{ ec2_instance_result.instances | map(attribute='instance_id') | list }}" dest=./previous_instance_ids.txt
+      when: ec2_instance_result is defined and ec2_instance_result.instances is defined
+
+
+      
 
