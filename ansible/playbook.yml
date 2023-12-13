@@ -1,10 +1,10 @@
-- name: Terminate Previous Instances by Tag
+- name: Terminate Previous EC2 Instance
   hosts: localhost
   connection: local
   gather_facts: no
 
   tasks:
-    - name: Find previous instances by tag
+    - name: Find previous instance by Tag
       ec2_instance_info:
         filters:
           "tag:Name": "eShop_production"
@@ -14,7 +14,7 @@
         security_token: "{{ session_token }}"
       register: previous_instances
 
-    - name: Terminate previous instances
+    - name: Terminate previous instance
       ec2_instance:
         state: 'absent'
         instance_ids: "{{ previous_instances.instances | map(attribute='instance_id') | list }}"
@@ -24,7 +24,7 @@
         region: us-east-1
       when: previous_instances.instances and previous_instances.instances | length > 0
 
-- name: Deploy to EC2
+- name: Deploy to AWS EC2
   hosts: localhost
   connection: local
 
@@ -48,20 +48,20 @@
         security_token: "{{ session_token }}"
       register: ec2_instance_result
 
-    - name: Add instance host to security_group
+    - name: Add EC2 Instance host to security_group
       add_host:
         hostname: "{{item.public_ip_address}}"
         groupname: launched
       loop: "{{ec2_instance_result.instances}}"
 
-    - name: Wait for ssh connection
+    - name: Wait for SSH connection
       delegate_to: "{{ item.public_ip_address }}"
       wait_for_connection:
         delay: 60
         timeout: 360
       loop: "{{ec2_instance_result.instances}}"
     
-- name: Configure EC2
+- name: Configure EC2 Instance
   hosts: launched
   connection: ssh
   vars:
@@ -87,20 +87,20 @@
       shell: systemctl enable docker
       become: yes
     
-    - name: Set rights to Docker
+    - name: Set access rights to Docker
       shell: usermod -a -G docker ec2-user
       become: yes
 
-    - name: Get eshop from Git
+    - name: Get eShop repo from Git
       git:
         repo: 'https://github.com/strbavaclav/4IT572_docker.git'
         dest: ./app
     
-    - name: Build Docker with eshop
+    - name: Build eShop Docker
       shell: cd app && docker build -t myeshop:latest .
       become: yes
 
-    - name: Run Docker with eshop
+    - name: Run eShop Docker
       shell: docker run -p 80:3000 myeshop
       async: 45
       poll: 0
@@ -109,16 +109,6 @@
     - wait_for:
         port:
           80
-
-- name: Save instance IDs for next run
-  hosts: localhost
-  connection: local
-  gather_facts: no
-
-  tasks:
-    - name: Save instance IDs for next run
-      local_action: copy content="{{ ec2_instance_result.instances | map(attribute='instance_id') | list }}" dest=./previous_instance_ids.txt
-      when: ec2_instance_result is defined and ec2_instance_result.instances is defined
 
 
       
