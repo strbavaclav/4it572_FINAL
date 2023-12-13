@@ -10,19 +10,21 @@
       register: prev_instance_file
 
     - name: Read previous instance IDs
-      command: cat ./previous_instance_ids.txt
-      register: prev_instance_ids
+      slurp:
+        src: ./previous_instance_ids.txt
+      register: prev_instance_ids_content
       when: prev_instance_file.stat.exists
 
     - name: Terminate previous instances
       ec2_instance:
         state: 'absent'
-        instance_ids: "{{ (prev_instance_ids.stdout | from_json) }}"
+        instance_ids: "{{ (prev_instance_ids_content['content'] | b64decode | from_json) }}"
         aws_access_key: "{{ access_key }}"
         aws_secret_key: "{{ secret_key }}"
         security_token: "{{ session_token }}"
         region: us-east-1
-      when: prev_instance_ids is defined and prev_instance_ids.stdout != ''
+      when: prev_instance_ids_content is defined and prev_instance_ids_content['content'] | b64decode | from_json
+
 
 
 - name: Deploy to EC2
