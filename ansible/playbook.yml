@@ -1,37 +1,28 @@
-- name: Terminate Previous Instances
+- name: Terminate Previous Instances by Tag
   hosts: localhost
   connection: local
   gather_facts: no
 
   tasks:
-    - name: Check for previous instance IDs file
-      stat:
-        path: ./previous_instance_ids.txt
-      register: prev_instance_file
-
-    - name: Read previous instance IDs
-      slurp:
-        src: ./previous_instance_ids.txt
-      register: prev_instance_ids_content
-      when: prev_instance_file.stat.exists
-
-    - name: Decode instance IDs
-      set_fact:
-        previous_instance_ids: "{{ (prev_instance_ids_content['content'] | b64decode | from_json) }}"
-      when: prev_instance_ids_content is defined and 'content' in prev_instance_ids_content
+    - name: Find previous instances by tag
+      ec2_instance_info:
+        filters:
+          "tag:Name": "eShop_production"
+        region: us-east-1
+        aws_access_key: "{{ access_key }}"
+        aws_secret_key: "{{ secret_key }}"
+        security_token: "{{ session_token }}"
+      register: previous_instances
 
     - name: Terminate previous instances
       ec2_instance:
         state: 'absent'
-        instance_ids: "{{ previous_instance_ids }}"
+        instance_ids: "{{ previous_instances.instances | map(attribute='instance_id') | list }}"
         aws_access_key: "{{ access_key }}"
         aws_secret_key: "{{ secret_key }}"
         security_token: "{{ session_token }}"
         region: us-east-1
-      when: previous_instance_ids is defined and previous_instance_ids | length > 0
-
-
-
+      when: previous_instances.instances and previous_instances.instances | length > 0
 
 - name: Deploy to EC2
   hosts: localhost
@@ -41,6 +32,8 @@
     - name: Launch EC2 Instance
       ec2_instance:
         instance_type: t2.medium
+        tags:
+          Name: "eShop_production"
         image_id: ami-0230bd60aa48260c6
         region: us-east-1
         key_name: ansible
