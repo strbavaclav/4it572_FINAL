@@ -15,15 +15,21 @@
       register: prev_instance_ids_content
       when: prev_instance_file.stat.exists
 
+    - name: Decode instance IDs
+      set_fact:
+        previous_instance_ids: "{{ (prev_instance_ids_content['content'] | b64decode | from_json) }}"
+      when: prev_instance_ids_content is defined and 'content' in prev_instance_ids_content
+
     - name: Terminate previous instances
       ec2_instance:
         state: 'absent'
-        instance_ids: "{{ (prev_instance_ids_content['content'] | b64decode | from_json) }}"
+        instance_ids: "{{ previous_instance_ids }}"
         aws_access_key: "{{ access_key }}"
         aws_secret_key: "{{ secret_key }}"
         security_token: "{{ session_token }}"
         region: us-east-1
-      when: prev_instance_ids_content is defined and prev_instance_ids_content['content'] | b64decode | from_json
+      when: previous_instance_ids is defined and previous_instance_ids | length > 0
+
 
 
 
