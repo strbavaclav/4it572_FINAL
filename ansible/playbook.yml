@@ -102,20 +102,9 @@
         security_token: "{{ session_token }}"
       register: all_instances
 
-    - name: Debug all instances info
-      debug:
-        msg: "Instance ID: {{ item.instance_id }}, State: {{ item.state.name }}"
-      loop: "{{ all_instances.instances }}"
-      when: all_instances.instances | length > 0
-
-    - name: Show list
-      debug:
-        var: all_instances.instances
-      when: all_instances.instances | length > 0
-
     - name: Exclude the created instance
       set_fact:
-        instances_to_terminate: "{{ all_instances.instances | sort(attribute='launch_time') | reverse | map(attribute='instance_id') | flatten | slice(1, None) }}"
+        instances_to_terminate: "{{ all_instances.instances | sort(attribute='launch_time',reverse=true) | map(attribute='instance_id') | slice(1, None) }}"
       when: all_instances.instances | length > 0
       
     - name: Debug previous instances info
