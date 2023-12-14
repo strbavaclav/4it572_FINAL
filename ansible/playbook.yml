@@ -36,54 +36,54 @@
         timeout: 360
       loop: "{{ec2_instance_result.instances}}"
     
-# - name: Configure EC2 Instance
-#   hosts: launched
-#   connection: ssh
-#   vars:
-#     ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+- name: Configure EC2 Instance
+  hosts: launched
+  connection: ssh
+  vars:
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
 
-#   tasks:
-#     - name: Install Git and Docker
-#       yum:
-#         name:
-#           - git
-#           - docker
-#         state: latest
-#         update_cache: yes
-#       become: yes
+  tasks:
+    - name: Install Git and Docker
+      yum:
+        name:
+          - git
+          - docker
+        state: latest
+        update_cache: yes
+      become: yes
 
-#     - service:
-#         name: docker
-#         state: started
-#         enabled: yes
-#       become: yes
+    - service:
+        name: docker
+        state: started
+        enabled: yes
+      become: yes
 
-#     - name: Start Docker on startup
-#       shell: systemctl enable docker
-#       become: yes
+    - name: Start Docker on startup
+      shell: systemctl enable docker
+      become: yes
     
-#     - name: Set access rights to Docker
-#       shell: usermod -a -G docker ec2-user
-#       become: yes
+    - name: Set access rights to Docker
+      shell: usermod -a -G docker ec2-user
+      become: yes
 
-#     - name: Get eShop repo from Git
-#       git:
-#         repo: 'https://github.com/strbavaclav/4IT572_docker.git'
-#         dest: ./app
+    - name: Get eShop repo from Git
+      git:
+        repo: 'https://github.com/strbavaclav/4IT572_docker.git'
+        dest: ./app
     
-#     - name: Build eShop Docker
-#       shell: cd app && docker build -t myeshop:latest .
-#       become: yes
+    - name: Build eShop Docker
+      shell: cd app && docker build -t myeshop:latest .
+      become: yes
 
-#     - name: Run eShop Docker
-#       shell: docker run -p 80:3000 myeshop
-#       async: 45
-#       poll: 0
-#       become: yes
+    - name: Run eShop Docker
+      shell: docker run -p 80:3000 myeshop
+      async: 45
+      poll: 0
+      become: yes
 
-#     - wait_for:
-#         port:
-#           80
+    - wait_for:
+        port:
+          80
 
 - name: Terminate Previous EC2 Instance
   hosts: localhost
@@ -102,29 +102,19 @@
         security_token: "{{ session_token }}"
       register: all_instances
 
-    - name: Make a list
+    - name: List & Sort all production Instances 
       set_fact:
         instances_list: "{{ all_instances.instances | sort(attribute='launch_time', reverse=true) | map(attribute='instance_id') }}"
       when: all_instances.instances | length > 0
-      
-    - name: Debug previous instances info
-      debug:
-        var: instances_list
-      when: instances_list and instances_list | length > 0
 
-    - name: Slice the list starting from the second element
+    - name: Exclude the newly created Instance
       set_fact:
         instances_to_terminate: "{{ instances_to_terminate + [item] }}"
       loop: "{{ instances_list[1:] }}"
       vars:
         instances_to_terminate: []
 
-    - name: Debug previous instances infosss
-      debug:
-        var: instances_to_terminate
-      when: instances_to_terminate and instances_to_terminate | length > 0
-
-    - name: Terminate previous instances
+    - name: Terminate previous production Instances
       ec2_instance:
         state: 'absent'
         instance_ids: "{{ instances_to_terminate }}"
