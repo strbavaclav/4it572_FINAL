@@ -102,12 +102,22 @@
         security_token: "{{ session_token }}"
       register: all_instances
 
-    - name: Exclude the created instance
+    - name: Make a list
       set_fact:
-        instances_to_terminate: "{{ all_instances.instances | sort(attribute='launch_time', reverse=true) | map(attribute='instance_id') | list | slice(1, None) }}"
+        instances_list: "{{ all_instances.instances | sort(attribute='launch_time', reverse=true) | map(attribute='instance_id') }}"
       when: all_instances.instances | length > 0
       
     - name: Debug previous instances info
+      debug:
+        var: instances_list
+      when: instances_list and instances_list | length > 0
+
+    - name: Exclude the created instance
+      set_fact:
+        instances_to_terminate: "{{ instances_list | flatten }}"
+      when: all_instances.instances | length > 0
+
+    - name: Debug previous instances infosss
       debug:
         var: instances_to_terminate
       when: instances_to_terminate and instances_to_terminate | length > 0
