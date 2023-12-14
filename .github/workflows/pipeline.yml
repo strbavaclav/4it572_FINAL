@@ -1,4 +1,4 @@
-name: Install, Build & test E-shop
+name: eShop Pipeline
 
 on:
   workflow_dispatch:
@@ -51,7 +51,7 @@ jobs:
           path: node_modules
           key: node_modules-${{hashFiles('**/package-lock.json')}}
 
-      - name: Build
+      - name: Build project
         run: |
           npm rebuild node-sass --force
           npm run build -- --colors
