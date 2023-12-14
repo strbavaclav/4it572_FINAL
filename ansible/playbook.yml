@@ -103,10 +103,9 @@
 
     - name: Exclude the newest instance
       set_fact:
-        instances_to_terminate: "{{ all_instances.instances | sort(attribute='tags.Created') | reverse | list | slice(1, None) }}"
-
-
-    - name: Terminate previous instance
+        instances_to_terminate: "{{ all_instances.instances | sort(attribute='launch_time') | reverse | list | slice(1, None) }}"
+      
+    - name: Terminate previous instances
       ec2_instance:
         state: 'absent'
         instance_ids: "{{ instances_to_terminate | map(attribute='instance_id') | list }}"
