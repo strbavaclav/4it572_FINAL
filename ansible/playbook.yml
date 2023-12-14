@@ -101,14 +101,22 @@
         security_token: "{{ session_token }}"
       register: all_instances
 
+    - name: Debug all instances info
+      debug:
+        var: all_instances
+
     - name: Exclude the created instance
       set_fact:
         instances_to_terminate: "{{ all_instances.instances | sort(attribute='launch_time') | reverse | map(attribute='instance_id') | list | slice(1, None) }}"
       
+    - name: Debug previous instances info
+      debug:
+        var: instances_to_terminate
+
     - name: Terminate previous instances
       ec2_instance:
         state: 'absent'
-        instance_ids: "{{ instances_to_terminate | map(attribute='instance_id') | list }}"
+        instance_ids: "{{ instances_to_terminate }}"
         aws_access_key: "{{ access_key }}"
         aws_secret_key: "{{ secret_key }}"
         security_token: "{{ session_token }}"
