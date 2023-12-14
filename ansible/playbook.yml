@@ -113,7 +113,7 @@
         aws_secret_key: "{{ secret_key }}"
         security_token: "{{ session_token }}"
         region: us-east-1
-      when: instances_to_terminate && instances_to_terminat | length > 0
+      when: instances_to_terminate and instances_to_terminat | length > 0
 
 
 
