@@ -101,9 +101,9 @@
         security_token: "{{ session_token }}"
       register: all_instances
 
-    - name: Exclude the newest instance
+    - name: Exclude the created instance
       set_fact:
-        instances_to_terminate: "{{ all_instances.instances | sort(attribute='launch_time') | reverse | list | slice(1, None) }}"
+        instances_to_terminate: "{{ all_instances.instances | sort(attribute='launch_time') | reverse | map(attribute='instance_id') | list | slice(1, None) }}"
       
     - name: Terminate previous instances
       ec2_instance:
