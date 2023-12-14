@@ -113,6 +113,7 @@
       loop: "{{ instances_list[1:] }}"
       vars:
         instances_to_terminate: []
+      when: instances_list | length > 0
 
     - name: Terminate previous production Instances
       ec2_instance:
