@@ -114,7 +114,7 @@
 
     - name: Exclude the created instance
       set_fact:
-        instances_to_terminate: "{{ instances_list | flatten }}"
+        instances_to_terminate: "{{ instances_list | slice(1, None) }}"
       when: all_instances.instances | length > 0
 
     - name: Debug previous instances infosss
