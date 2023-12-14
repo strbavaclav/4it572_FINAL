@@ -104,7 +104,7 @@
 
     - name: Exclude the created instance
       set_fact:
-        instances_to_terminate: "{{ all_instances.instances | sort(attribute='launch_time',reverse=true) | map(attribute='instance_id') | slice(1, None) | list }}"
+        instances_to_terminate: "{{ all_instances.instances | sort(attribute='launch_time',reverse=true) | map(attribute='instance_id') | list | flatten | slice(1, None) | list }}"
       when: all_instances.instances | length > 0
       
     - name: Debug previous instances info
@@ -115,7 +115,7 @@
     - name: Terminate previous instances
       ec2_instance:
         state: 'absent'
-        instance_ids: "{{ instances_to_terminate | flatted }}"
+        instance_ids: "{{ instances_to_terminate }}"
         aws_access_key: "{{ access_key }}"
         aws_secret_key: "{{ secret_key }}"
         security_token: "{{ session_token }}"
