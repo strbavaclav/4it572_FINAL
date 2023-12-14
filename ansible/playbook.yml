@@ -95,6 +95,7 @@
       ec2_instance_info:
         filters:
           "tag:Name": "eShop_production"
+          "instance-state-name": "running"
         region: us-east-1
         aws_access_key: "{{ access_key }}"
         aws_secret_key: "{{ secret_key }}"
@@ -103,15 +104,20 @@
 
     - name: Debug all instances info
       debug:
-        var: all_instances
+        msg: "Instance ID: {{ item.instance_id }}, Name: {{ (item.tags | selectattr('key', 'equalto', 'Name') | map(attribute='value') | list | first) | default('N/A') }}, State: {{ item.state.name }}"
+      loop: "{{ all_instances.instances }}"
+      when: all_instances.instances | length > 0
 
     - name: Exclude the created instance
       set_fact:
         instances_to_terminate: "{{ all_instances.instances | sort(attribute='launch_time') | reverse | map(attribute='instance_id') | list | slice(1, None) }}"
+      when: all_instances.instances | length > 0
       
     - name: Debug previous instances info
       debug:
         var: instances_to_terminate
+      when: instances_to_terminate and instances_to_terminate | length > 0
+
 
     - name: Terminate previous instances
       ec2_instance:
