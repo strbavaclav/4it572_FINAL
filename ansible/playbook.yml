@@ -110,14 +110,13 @@
 
     - name: Exclude the created instance
       set_fact:
-        instances_to_terminate: "{{ all_instances.instances | sort(attribute='launch_time') | reverse | map(attribute='instance_id') | list | slice(1, None) | flatten }}"
+        instances_to_terminate: "{{ all_instances.instances | sort(attribute='launch_time') | reverse | map(attribute='instance_id') | list | flatten | slice(1, None) }}"
       when: all_instances.instances | length > 0
       
     - name: Debug previous instances info
       debug:
         var: instances_to_terminate
       when: instances_to_terminate and instances_to_terminate | length > 0
-
 
     - name: Terminate previous instances
       ec2_instance:
