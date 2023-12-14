@@ -112,10 +112,12 @@
         var: instances_list
       when: instances_list and instances_list | length > 0
 
-    - name: Exclude the created instance
+    - name: Slice the list starting from the second element
       set_fact:
-        instances_to_terminate: "{{ instances_list | slice(1, None) }}"
-      when: all_instances.instances | length > 0
+        instances_to_terminate: "{{ instances_to_terminate + [item] }}"
+      loop: "{{ instances_list[1:] }}"
+      vars:
+        instances_to_terminate: []
 
     - name: Debug previous instances infosss
       debug:
