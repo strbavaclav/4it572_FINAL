@@ -104,7 +104,7 @@
 
     - name: Debug all instances info
       debug:
-        msg: "Instance ID: {{ item.instance_id }}, Name: {{ (item.tags | selectattr('key', 'equalto', 'Name') | map(attribute='value') | list | first) | default('N/A') }}, State: {{ item.state.name }}"
+        msg: "Instance ID: {{ item.instance_id }}, State: {{ item.state.name }}"
       loop: "{{ all_instances.instances }}"
       when: all_instances.instances | length > 0
 
